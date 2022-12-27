@@ -1,4 +1,5 @@
-﻿using System;
+﻿// .NET 22 Daniel Svensson
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
