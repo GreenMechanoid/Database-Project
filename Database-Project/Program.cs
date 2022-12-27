@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// .NET 22 Daniel Svensson
+using Microsoft.EntityFrameworkCore;
 
 namespace Database_Project
 {
@@ -6,6 +7,9 @@ namespace Database_Project
     {
         static void Main(string[] args)
         {
+
+            // There's no mention of needing a ER Diagram in the Assignment info, Hence no ER Diagram
+            SubMenu menu = new();
             bool keepLooping = true, correctInput = false;
             int navigation = 0;
             do
@@ -39,19 +43,19 @@ namespace Database_Project
                         break;
                     case 1:
                         Console.Clear();
-                        
+                        menu.StaffPortal();
                         goto default;
                     case 2:
                         Console.Clear();
-                        
+                        menu.StudentPortal();
                         goto default;
                     case 3:
                         Console.Clear();
-                        
+                        menu.DepartmentPortal();
                         goto default;
                     case 4:
                         Console.Clear();
-
+                        menu.CoursesPortal();
                         goto default;
                     case 9:
                         keepLooping = false;
