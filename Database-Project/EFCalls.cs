@@ -9,5 +9,20 @@ namespace Database_Project
 {
     internal class EFCalls
     {
+
+
+        public void ShowAllStudents()
+        {
+
+        }
+
+        public void TeachersPerDepartment()
+        {
+
+        }
+        public void ListAllCourses()
+        {
+
+        }
     }
 }

@@ -54,6 +54,7 @@ namespace Database_Project
                     case 1:
                         Console.Clear();
                         sql.GetAllStaff();
+                        Thread.Sleep(5000);
                         goto default;
                     case 2:
                         Console.Clear();
@@ -71,7 +72,7 @@ namespace Database_Project
          * TODO
          * Save all Students with what Year  SQL
          * Save A student with all courses and grades - Teacher and grade date SQL
-         * Show info about all Students
+         * Show info about all Students EF
          */
         public void StudentPortal()
         {
@@ -104,11 +105,15 @@ namespace Database_Project
                         break;
                     case 1:
                         Console.Clear();
-                        
+                        sql.GetStudentsWithYear();
                         goto default;
                     case 2:
                         Console.Clear();
-                        
+                        sql.SaveStudentWithGrades();
+                        goto default;
+                    case 3:
+                        Console.Clear();
+                        ef.ShowAllStudents();
                         goto default;
                     case 9:
                         keepLooping = false;
@@ -156,16 +161,16 @@ namespace Database_Project
                         break;
                     case 1:
                         Console.Clear();
-                        
+                        ef.TeachersPerDepartment();
                         goto default;
                     case 2:
                         Console.Clear();
-
+                        sql.SalaryPerDepartment();
                         goto default;
 
                     case 3:
                         Console.Clear();
-
+                        sql.AverageSalaryPerDepartment();
                         goto default;
                     case 9:
                         keepLooping = false;
@@ -209,7 +214,7 @@ namespace Database_Project
                         break;
                     case 1:
                         Console.Clear();
-                        
+                        ef.ListAllCourses();
                         goto default;
                     case 9:
                         keepLooping = false;
