@@ -54,11 +54,12 @@ namespace Database_Project
                     case 1:
                         Console.Clear();
                         sql.GetAllStaff();
-                        Thread.Sleep(5000);
+                        Thread.Sleep(6000);
                         goto default;
                     case 2:
                         Console.Clear();
                         sql.AddNewStaff();
+                        Thread.Sleep(6000);
                         goto default;
                     case 9:
                         keepLooping = false;
@@ -105,15 +106,18 @@ namespace Database_Project
                         break;
                     case 1:
                         Console.Clear();
-                        sql.GetStudentsWithYear();
+                        sql.GetStudentsYearList();
+                        Thread.Sleep(6000);
                         goto default;
                     case 2:
                         Console.Clear();
                         sql.SaveStudentWithGrades();
+                        Thread.Sleep(6000);
                         goto default;
                     case 3:
                         Console.Clear();
                         ef.ShowAllStudents();
+                        Thread.Sleep(6000);
                         goto default;
                     case 9:
                         keepLooping = false;
@@ -162,15 +166,18 @@ namespace Database_Project
                     case 1:
                         Console.Clear();
                         ef.TeachersPerDepartment();
+                        Thread.Sleep(6000);
                         goto default;
                     case 2:
                         Console.Clear();
                         sql.SalaryPerDepartment();
+                        Thread.Sleep(6000);
                         goto default;
 
                     case 3:
                         Console.Clear();
                         sql.AverageSalaryPerDepartment();
+                        Thread.Sleep(6000);
                         goto default;
                     case 9:
                         keepLooping = false;
@@ -215,6 +222,7 @@ namespace Database_Project
                     case 1:
                         Console.Clear();
                         ef.ListAllCourses();
+                        Thread.Sleep(6000);
                         goto default;
                     case 9:
                         keepLooping = false;

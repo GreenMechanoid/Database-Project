@@ -6,13 +6,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Database_Project.Models;
+using System.Text.RegularExpressions;
 
 namespace Database_Project
 {
     internal class SQLCalls
     {
         SqlCommand cmd;
-        SqlConnection conn = new("Data Source=GREENMECHANOID;" + "Initial Catalog=ProjectDB;" + "Trusted_Connection=true");
+        SqlConnection conn = new("Data Source=GREENMECHANOID;" + "Initial Catalog=ProjectDB;" + "Trusted_Connection=true"); // Needs changeing for other Users (Local DB)
         string SQLCountString, SQLQuery;
         public SQLCalls()
         {
@@ -28,7 +30,7 @@ namespace Database_Project
         public void GetAllStaff()
         {
             SQLCountString = "SELECT Count(*) FROM Staff";
-            SQLQuery = "SELECT FirstName, LastName, Occupation, Hiredate FROM Staff";
+            SQLQuery = "SELECT FirstName, LastName, Occupation, Hiredate , FLOOR((CAST (GetDate() AS INTEGER) - CAST(Hiredate AS INTEGER)) / 365.25) as Years FROM Staff";
             TryConnection(SQLCountString,SQLQuery);
         }
 
@@ -182,30 +184,62 @@ namespace Database_Project
 
         }
 
-        public void GetStudentsWithYear()
+        public void GetStudentsYearList()
         {
-
+            int input = 0;
+            do
+            {
+                Console.WriteLine("input SchoolYear: 1 ,2 or 3");
+            } while (!int.TryParse(Console.ReadLine(),out input));
+            SQLCountString = $"SELECT Count(*) FROM Students AS StudentLists WHERE ClassYear = {input}";
+            SQLQuery = $"SELECT FirstName,LastName,ClassYear From Students WHERE ClassYear = {input}";
+            TryConnection(SQLCountString, SQLQuery);
         }
 
         public void SaveStudentWithGrades()
         {
+            int StudID;
+            SQLCountString = "SELECT Count(*) FROM Students AS Stud1";
+            SQLQuery = "SELECT FirstName,LastName,StudentID FROM Students Order By StudentID";
+            TryConnection(SQLCountString, SQLQuery);
+            Console.WriteLine("Please Select the Student you wish to print the grades for");
+            do
+            {
 
+            } while (!int.TryParse(Console.ReadLine(),out StudID));
+
+            SQLCountString = $"SELECT Count(*) From Grades AS Stud2 Where StudentID = {StudID}";
+            SQLQuery = $"SELECT Students.FirstName ,Students.LastName ,Staff.FirstName, Staff.LastName, Course.CourseName, Grades.Grade,Grades.GradeDate " +
+                $"FROM Students " +
+                $"INNER JOIN Grades ON Students.StudentID = Grades.StudentID " +
+                $"INNER JOIN Staff ON Grades.StaffID = Staff.StaffID " +
+                $"INNER JOIN Course ON Course.StaffID = Staff.StaffID WHERE Students.StudentID = {StudID}";
+            TryConnection(SQLCountString, SQLQuery);
         }
 
         public void SalaryPerDepartment()
         {
+            SQLCountString = "SELECT Count(*) FROM DEPARTMENT AS SalaryPerDept";
+            SQLQuery = "SELECT Sum(Salary), DepartmentName FROM Staff INNER JOIN Department on Department.DepartmentID = Staff.DepartmentID GROUP BY DepartmentName";
+            TryConnection(SQLCountString, SQLQuery);
 
         }
 
-        public void AverageSalaryPerDepartment()
+        public void AverageSalaryPerDepartment() 
         {
-
+            SQLCountString = "SELECT Count(*) FROM DEPARTMENT AS SalaryPerDept";
+            SQLQuery = "SELECT Avg(Salary), DepartmentName FROM Staff INNER JOIN Department on Department.DepartmentID = Staff.DepartmentID GROUP BY DepartmentName";
+            TryConnection(SQLCountString, SQLQuery);
         }
 
 
         public void TryConnection(string SQLCountString, string SQLDataSelection)
         {
+            //i should've changed this entire method into using string interpolation with $"" as i find it easier to work with.
+            //but to keep it consistent with previous assignment i've chosen not to
+
             SqlDataReader dr; // Middle hand for calls between C# and SQL Select request
+            bool once = false; // used in save to file parts
             try
             {
                 cmd.CommandText = SQLCountString;
@@ -221,7 +255,7 @@ namespace Database_Project
                     for (int i = 0; i < iCount; i++)
                     {
                         dr.Read(); // Read one row from the table  
-                        Console.WriteLine("Name: {0} {1} \n Occupation {2}\nHired on: {3}\n-----------", dr[0], dr[1], dr[2], dr[3]);
+                        Console.WriteLine("Name: {0} {1} \n Occupation {2}\nHired on: {3} , and has been with us for {4} Years\n-----------", dr[0], dr[1], dr[2], dr[3], dr[4]);
                     }
                 }
 
@@ -238,7 +272,99 @@ namespace Database_Project
                         Console.WriteLine("DepartmentID: {0} Department Name: {1}", dr[0], dr[1]);
                     }
                 }
+                else if (conn.State == ConnectionState.Open && SQLCountString.Contains("AS SalaryPerDept") == true)
+                {
+                    object objCount = cmd.ExecuteScalar();
+                    int iCount = (int)objCount;
+                    cmd.CommandText = SQLDataSelection;
+                    dr = cmd.ExecuteReader(CommandBehavior.SingleResult);
+                    // For loop to read everything from the table  
+                    for (int i = 0; i < iCount; i++)
+                    {
+                        dr.Read(); // Read one row from the table  
+                        Console.WriteLine("Salary Total: {0} For Department: {1}", dr[0], dr[1]);
+                    }
+                }
+                else if (conn.State == ConnectionState.Open && SQLCountString.Contains("AS StudentLists") == true)
+                {
+                    
+                    object objCount = cmd.ExecuteScalar();
+                    int iCount = (int)objCount;
+                    cmd.CommandText = SQLDataSelection;
+                    dr = cmd.ExecuteReader(CommandBehavior.SingleResult);
+                    // For loop to read everything from the table  
+                    for (int i = 0; i < iCount; i++)
+                    {
+                        dr.Read(); // Read one row from the table  
+                        Console.WriteLine("FirstName: {0} LastName: {1} SchoolYear: {2}", dr[0], dr[1], dr[2]);
 
+                        if (File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\ClassList.txt") && once == false)
+                        {
+                            File.Delete(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\ClassList.txt");
+                            once = true;
+
+                        }
+                        using (StreamWriter sw = new(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\ClassList.txt",append:true))
+                        {
+
+                            sw.WriteLine(dr[0].ToString() + ", " + dr[1].ToString() + " SchoolYear: " + dr[2].ToString());
+                        }
+                    }
+                    Console.WriteLine("File of Students and SchoolYear save to: {0}", Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\ClassList.txt");
+                }
+                else if (conn.State == ConnectionState.Open && SQLCountString.Contains("AS Stud1") == true)  
+                    // Getting the full list of students in SQL to do Student With Grades
+                {
+                    object objCount = cmd.ExecuteScalar();
+                    int iCount = (int)objCount;
+                    cmd.CommandText = SQLDataSelection;
+                    dr = cmd.ExecuteReader(CommandBehavior.SingleResult);
+                    // For loop to read everything from the table  
+                    for (int i = 0; i < iCount; i++)
+                    {
+                        dr.Read(); // Read one row from the table  
+                        Console.WriteLine("Name: {0} {1}  Student ID: {2}", dr[0], dr[1], dr[2]);
+                    }
+                }
+                else if (conn.State == ConnectionState.Open && SQLCountString.Contains("From Grades AS Stud2") == true)
+                {
+                    string savedName="";
+                    object objCount = cmd.ExecuteScalar();
+                    int iCount = (int)objCount;
+                    cmd.CommandText = SQLDataSelection;
+                    dr = cmd.ExecuteReader(CommandBehavior.SingleResult);
+                    // For loop to read everything from the table  
+                    for (int i = 0; i < iCount; i++)
+                    {
+                        dr.Read(); // Read one row from the table  
+                        if (i == 0)
+                        {
+                        Console.WriteLine("Name: {0} {1}", dr[0], dr[1]);
+
+                        }
+                        else
+                        {
+                            Console.WriteLine("Course: {0}, Grade: {1} \n Grading Teacher: {2} {3} , Grading Date {4}",dr[4], dr[5], dr[2], dr[3], dr[6]);
+                        }
+                        if (File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + (@$"\{dr[0]}_{dr[1]}.txt")) && once == false)
+                        {
+                            File.Delete(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + (@$"\{dr[0]}_{dr[1]}.txt"));
+                            once = true;
+
+                        }
+                        using (StreamWriter sw = new(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + (@$"\{dr[0]}_{dr[1]}.txt"), append: true))
+                        {
+                            if (once == false)
+                            {
+                                savedName = dr[0].ToString() + " " + dr[1].ToString();
+                                sw.WriteLine("Student Name: {0} {1}" + dr[0].ToString() + dr[1].ToString());
+                            }
+
+                            sw.WriteLine("Course: " + dr[4].ToString() + " Grade: " + dr[5].ToString() + " Teacher: " + dr[2].ToString() + " " + dr[3].ToString() + " Grading Date: " + dr[6].ToString());
+                        }
+                    }
+                    Console.WriteLine($"File Of {dr[0]}_{dr[1]}'s Grades saved to {Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + (@$"\{dr[0]}_{dr[1]}.txt")}");
+                }
             }
             catch (Exception exp)
             {
