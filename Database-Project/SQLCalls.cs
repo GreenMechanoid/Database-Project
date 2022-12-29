@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Database_Project.Models;
 using System.Text.RegularExpressions;
+using System.IO;
 
 namespace Database_Project
 {
@@ -29,7 +30,7 @@ namespace Database_Project
 
         public void GetAllStaff()
         {
-            SQLCountString = "SELECT Count(*) FROM Staff";
+            SQLCountString = "SELECT Count(*) FROM Staff AS StaffYears";
             SQLQuery = "SELECT FirstName, LastName, Occupation, Hiredate , FLOOR((CAST (GetDate() AS INTEGER) - CAST(Hiredate AS INTEGER)) / 365.25) as Years FROM Staff";
             TryConnection(SQLCountString,SQLQuery);
         }
@@ -199,9 +200,7 @@ namespace Database_Project
         public void SaveStudentWithGrades()
         {
             int StudID;
-            SQLCountString = "SELECT Count(*) FROM Students AS Stud1";
-            SQLQuery = "SELECT FirstName,LastName,StudentID FROM Students Order By StudentID";
-            TryConnection(SQLCountString, SQLQuery);
+            ListAllStudents();
             Console.WriteLine("Please Select the Student you wish to print the grades for");
             do
             {
@@ -232,6 +231,101 @@ namespace Database_Project
             TryConnection(SQLCountString, SQLQuery);
         }
 
+        public void TransactionStudentGrade()
+        {
+            //info on how to gathered from - https://learn.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqltransaction?view=dotnet-plat-ext-7.0
+            SqlCommand TransacCommand = conn.CreateCommand();
+            SqlTransaction transaction;
+            int studID = 0, courseID = 0,staffID = 0,grade = 0;
+
+
+            Console.WriteLine("Which Teacher is Grading a course? (StaffID)");
+            ListAllTeachers();
+            while (!int.TryParse(Console.ReadLine(), out staffID)) ;
+            Console.Clear();
+            Console.WriteLine("For What Course is the Grading? (CourseID)");
+            ListAllCoursesSQL();
+            while (!int.TryParse(Console.ReadLine(), out courseID)) ;
+            Console.WriteLine("What student is the Grade about? (StudentID)");
+            ListAllStudents();
+            while (!int.TryParse(Console.ReadLine(), out studID));
+            Console.Clear();
+            Console.WriteLine("And finally What Grade has the student gotten? (0-5)");
+            while (!int.TryParse(Console.ReadLine(), out grade));
+
+            conn.Open();
+
+            transaction = conn.BeginTransaction();
+            TransacCommand.Connection = conn;
+            TransacCommand.Transaction = transaction;
+            try
+            {
+                TransacCommand.CommandText =
+                    $"Insert into Grades (Grade,CourseID,StaffID,StudentID) VALUES ({grade},{courseID},{staffID},{studID})";
+                TransacCommand.ExecuteNonQuery();
+                transaction.Commit();
+                Console.WriteLine("Grade has been Written to Database");
+            }
+            catch (Exception msg)
+            {
+                Console.WriteLine($"Commit Exception type: {msg.GetType()}");
+                Console.WriteLine("Message: " +msg.Message);
+                try // whups somthing went wrong - attempting rollback
+                {
+                    transaction.Rollback();
+                }
+                catch (Exception msg2)
+                {
+                    // handles error's that occured on server that bricked the rollback - such as a closed connection
+                    Console.WriteLine("Rollback Exception Type: {0}", msg2.GetType());
+                    Console.WriteLine("  Message: {0}", msg2.Message);
+                }
+            }
+            finally
+            {
+                conn.Close();
+            }
+        }
+
+        public void StudentFromStoredProcedure() 
+        {
+            // Calls Stored Procedure in the Database from the program
+            int id = 0;
+            SqlDataReader dr; // to be able to print to screen
+            SqlCommand StorProc = new("GetStudentByID", conn); // creating new SQLcommand for this.
+            try
+            {
+                conn.Open();
+
+                do
+                {
+                    Console.WriteLine("please enter an ID: ");
+                } while (!int.TryParse(Console.ReadLine(),out id));
+
+                if (conn.State == ConnectionState.Open)
+                {
+                    StorProc.CommandType = CommandType.StoredProcedure;
+                    StorProc.Parameters.Add("@StudID", SqlDbType.NVarChar).Value = id;
+                    StorProc.ExecuteNonQuery();
+
+                    dr = StorProc.ExecuteReader();
+                    while (dr.Read())
+                    {
+                        Console.WriteLine($"Name:{dr[0]} {dr[1]} ClassYear: {dr[2]}  StudentID : {dr[3]}");
+                    }
+                }
+            }
+            catch (Exception msg)
+            {
+
+                Console.WriteLine(msg.Message);
+            }
+            finally
+            {
+                conn.Close();
+            }
+
+        }
 
         public void TryConnection(string SQLCountString, string SQLDataSelection)
         {
@@ -245,7 +339,7 @@ namespace Database_Project
                 cmd.CommandText = SQLCountString;
                 conn.Open();
                 //If Statement Checks incoming string for what table it's about
-                if (conn.State == ConnectionState.Open && SQLCountString.Contains("FROM Staff") == true)
+                if (conn.State == ConnectionState.Open && SQLCountString.Contains("AS StaffYears") == true)
                 {
                     object objCount = cmd.ExecuteScalar();
                     int iCount = (int)objCount;
@@ -270,6 +364,7 @@ namespace Database_Project
                     {
                         dr.Read(); // Read one row from the table  
                         Console.WriteLine("DepartmentID: {0} Department Name: {1}", dr[0], dr[1]);
+                        Console.WriteLine("--------------------");
                     }
                 }
                 else if (conn.State == ConnectionState.Open && SQLCountString.Contains("AS SalaryPerDept") == true)
@@ -283,6 +378,7 @@ namespace Database_Project
                     {
                         dr.Read(); // Read one row from the table  
                         Console.WriteLine("Salary Total: {0} For Department: {1}", dr[0], dr[1]);
+                        Console.WriteLine("--------------------");
                     }
                 }
                 else if (conn.State == ConnectionState.Open && SQLCountString.Contains("AS StudentLists") == true)
@@ -297,6 +393,7 @@ namespace Database_Project
                     {
                         dr.Read(); // Read one row from the table  
                         Console.WriteLine("FirstName: {0} LastName: {1} SchoolYear: {2}", dr[0], dr[1], dr[2]);
+                        Console.WriteLine("--------------------");
 
                         if (File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\ClassList.txt") && once == false)
                         {
@@ -324,6 +421,7 @@ namespace Database_Project
                     {
                         dr.Read(); // Read one row from the table  
                         Console.WriteLine("Name: {0} {1}  Student ID: {2}", dr[0], dr[1], dr[2]);
+                        Console.WriteLine("--------------------");
                     }
                 }
                 else if (conn.State == ConnectionState.Open && SQLCountString.Contains("From Grades AS Stud2") == true)
@@ -344,7 +442,9 @@ namespace Database_Project
                         }
                         else
                         {
+                            Console.WriteLine("--------------------");
                             Console.WriteLine("Course: {0}, Grade: {1} \n Grading Teacher: {2} {3} , Grading Date {4}",dr[4], dr[5], dr[2], dr[3], dr[6]);
+                            Console.WriteLine("--------------------");
                         }
                         if (File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + (@$"\{dr[0]}_{dr[1]}.txt")) && once == false)
                         {
@@ -365,6 +465,33 @@ namespace Database_Project
                     }
                     Console.WriteLine($"File Of {dr[0]}_{dr[1]}'s Grades saved to {Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + (@$"\{dr[0]}_{dr[1]}.txt")}");
                 }
+                else if (conn.State == ConnectionState.Open && SQLCountString.Contains("Where Occupation = 'Teacher'") == true)
+                {
+                    object objCount = cmd.ExecuteScalar();
+                    int iCount = (int)objCount;
+                    cmd.CommandText = SQLDataSelection;
+                    dr = cmd.ExecuteReader(CommandBehavior.SingleResult);
+                    // For loop to read everything from the table  
+                    for (int i = 0; i < iCount; i++)
+                    {
+                        dr.Read(); // Read one row from the table  
+                        Console.WriteLine("Name: {0} {1} StaffID {2}\n-----------", dr[0], dr[1], dr[2]);
+                    }
+                }
+                else if (conn.State == ConnectionState.Open && SQLCountString.Contains("AS LISTCOURSE") == true)
+                {
+                    object objCount = cmd.ExecuteScalar();
+                    int iCount = (int)objCount;
+                    cmd.CommandText = SQLDataSelection;
+                    dr = cmd.ExecuteReader(CommandBehavior.SingleResult);
+                    // For loop to read everything from the table  
+                    for (int i = 0; i < iCount; i++)
+                    {
+                        dr.Read(); // Read one row from the table  
+                        Console.WriteLine("Course: {0} CourseID: {1}", dr[0], dr[1]);
+                        Console.WriteLine("--------------------");
+                    }
+                }
             }
             catch (Exception exp)
             {
@@ -374,6 +501,30 @@ namespace Database_Project
             {
                 conn.Close();
             }
+        }
+
+        public void ListAllStudents()
+        {
+            // seperating this out due to multi call on this exact SQL query
+            SQLCountString = "SELECT Count(*) FROM Students AS Stud1";
+            SQLQuery = "SELECT FirstName,LastName,StudentID FROM Students Order By StudentID";
+            TryConnection(SQLCountString, SQLQuery);
+        }
+
+        public void ListAllTeachers()
+        {
+         
+            SQLCountString = "SELECT Count(*) FROM Staff Where Occupation = 'Teacher'";
+            SQLQuery = "SELECT FirstName, LastName, StaffID FROM Staff Where Occupation = 'Teacher'";
+            TryConnection(SQLCountString, SQLQuery);
+         
+        }
+
+        public void ListAllCoursesSQL()
+        {
+            SQLCountString = "SELECT Count(*) FROM Course AS LISTCOURSE";
+            SQLQuery = "SELECT CourseName, CourseID FROM Course Where IsActive = 1";
+            TryConnection(SQLCountString, SQLQuery);
         }
     }
 }

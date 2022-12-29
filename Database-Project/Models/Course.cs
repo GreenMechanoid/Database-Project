@@ -11,5 +11,6 @@ namespace Database_Project.Models
         public int? StaffId { get; set; }
         public int? GradeId { get; set; }
         public int? StudentId { get; set; }
+        public int? IsActive { get; set; }
     }
 }

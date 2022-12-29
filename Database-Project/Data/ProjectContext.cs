@@ -53,6 +53,7 @@ namespace Database_Project.Data
                 entity.Property(e => e.StaffId).HasColumnName("StaffID");
 
                 entity.Property(e => e.StudentId).HasColumnName("StudentID");
+                entity.Property(e => e.IsActive).HasColumnName("IsActive");
             });
 
             modelBuilder.Entity<Department>(entity =>
@@ -97,7 +98,7 @@ namespace Database_Project.Data
             {
                 entity.HasNoKey();
 
-                entity.Property(e => e.CourseId).HasColumnName("CourseID");
+                entity.Property(e => e.GradeID).HasColumnName("GradeID");
 
                 entity.Property(e => e.Firstname)
                     .HasMaxLength(50)
@@ -110,6 +111,9 @@ namespace Database_Project.Data
                 entity.Property(e => e.StudentId)
                     .ValueGeneratedOnAdd()
                     .HasColumnName("StudentID");
+
+                entity.Property(e => e.ClassYear)
+                     .HasColumnName("ClassYear");
             });
 
             modelBuilder.Entity<staff>(entity =>

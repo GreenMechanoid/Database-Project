@@ -61,6 +61,11 @@ namespace Database_Project
                         sql.AddNewStaff();
                         Thread.Sleep(6000);
                         goto default;
+                    case 5:
+                        Console.Clear();
+                        sql.ListAllTeachers();
+                        Thread.Sleep(6000);
+                        goto default;
                     case 9:
                         keepLooping = false;
                         break;
@@ -74,6 +79,7 @@ namespace Database_Project
          * Save all Students with what Year  SQL
          * Save A student with all courses and grades - Teacher and grade date SQL
          * Show info about all Students EF
+         * Stored Procedure (ID) to get info about a student
          */
         public void StudentPortal()
         {
@@ -90,9 +96,10 @@ namespace Database_Project
                             Console.WriteLine("1: Get all Students in a certain Year");
                             Console.WriteLine("2: Save Specific student with all courses and grades");
                             Console.WriteLine("3: Show all Students");
+                            Console.WriteLine("4: Get Student from Stored Procedure");
                             Console.WriteLine("9: Return to Main Menu");
                             int.TryParse(Console.ReadLine(), out navigation); // error checking on input, keeps looping until correct input is found
-                            if (navigation == 1 || navigation == 2 || navigation == 3 || navigation == 9)
+                            if (navigation == 1 || navigation == 2 || navigation == 3 || navigation == 4 || navigation == 9)
                             {
                                 correctInput = true;
                             }
@@ -117,6 +124,11 @@ namespace Database_Project
                     case 3:
                         Console.Clear();
                         ef.ShowAllStudents();
+                        Thread.Sleep(6000);
+                        goto default;
+                    case 4:
+                        Console.Clear();
+                        sql.StudentFromStoredProcedure();
                         Thread.Sleep(6000);
                         goto default;
                     case 9:
@@ -191,6 +203,7 @@ namespace Database_Project
         /*
          * TODO
          * List all Active Courses  EF
+         * Grade Student Via Transaction SQL
          */
         public void CoursesPortal()
         {
@@ -204,10 +217,11 @@ namespace Database_Project
                         {
                             Console.Clear();
                             Console.WriteLine("Courses Portal . Please choose a option");
-                            Console.WriteLine("1: Show all Active Courses");
+                            Console.WriteLine("1: Show all Courses");
+                            Console.WriteLine("2: Set Grade on Student");
                             Console.WriteLine("9: Return to Main Menu");
                             int.TryParse(Console.ReadLine(), out navigation); // error checking on input, keeps looping until correct input is found
-                            if (navigation == 1 || navigation == 9)
+                            if (navigation == 1 || navigation == 2 || navigation == 9)
                             {
                                 correctInput = true;
                             }
@@ -222,6 +236,11 @@ namespace Database_Project
                     case 1:
                         Console.Clear();
                         ef.ListAllCourses();
+                        Thread.Sleep(6000);
+                        goto default;
+                    case 2:
+                        Console.Clear();
+                        sql.TransactionStudentGrade();
                         Thread.Sleep(6000);
                         goto default;
                     case 9:

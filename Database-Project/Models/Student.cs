@@ -9,6 +9,7 @@ namespace Database_Project.Models
         public int StudentId { get; set; }
         public string? Firstname { get; set; }
         public string? LastName { get; set; }
-        public int? CourseId { get; set; }
+        public int? GradeID { get; set; }
+        public int? ClassYear { get; set; }
     }
 }
