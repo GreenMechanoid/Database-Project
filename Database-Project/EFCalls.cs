@@ -16,14 +16,16 @@ namespace Database_Project
 
         public void ShowAllStudents()
         {
+            Console.WriteLine("Fetching all Students....");
             using (var context = new ProjectContext()) 
             {
                 var Query = from stud in context.Students
                                select stud;
                 foreach (var stud in Query)
                 {
-                    Console.WriteLine("------------------------------------------------\n");
-                    Console.WriteLine("Student Name:" + stud.Firstname + " " + stud.LastName + " In Year: " + stud.ClassYear +" With Student ID: "+ stud.StudentId + "\n");
+                    Console.WriteLine("------------------------------------------------");
+                    Console.WriteLine("Student Name:" + stud.Firstname + " " + stud.LastName + " In Year: " 
+                        + stud.ClassYear +" With Student ID: "+ stud.StudentId + "\n");
                 }
             }
         }

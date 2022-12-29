@@ -18,9 +18,9 @@ namespace Database_Project
                 switch (navigation)
                 {
                     default:
-                        navigation = 0; keepLooping = true; correctInput = false;
                         do
                         {
+                            keepLooping = true; correctInput = false;
                             Console.Clear();
                             Console.WriteLine("Main Menu . Please choose a option");
                             Console.WriteLine("1: Staff Portal");

@@ -25,12 +25,12 @@ namespace Database_Project
          */
         public void StaffPortal()
         {
+            navigation = 0; keepLooping = true; correctInput = false;
             do
             {
                 switch (navigation)
                 {
                     default:
-                        navigation = 0; keepLooping = true; correctInput = false;
                         do
                         {
                             Console.Clear();
@@ -83,12 +83,12 @@ namespace Database_Project
          */
         public void StudentPortal()
         {
+            navigation = 0; keepLooping = true; correctInput = false;
             do
             {
                 switch (navigation)
                 {
                     default:
-                        navigation = 0; keepLooping = true; correctInput = false;
                         do
                         {
                             Console.Clear();
@@ -148,12 +148,12 @@ namespace Database_Project
          */
         public void DepartmentPortal()
         {
+            navigation = 0; keepLooping = true; correctInput = false;
             do
             {
                 switch (navigation)
                 {
                     default:
-                        navigation = 0; keepLooping = true; correctInput = false;
                         do
                         {
                             Console.Clear();
@@ -207,12 +207,12 @@ namespace Database_Project
          */
         public void CoursesPortal()
         {
+            navigation = 0; keepLooping = true; correctInput = false;
             do
             {
                 switch (navigation)
                 {
                     default:
-                        navigation = 0; keepLooping = true; correctInput = false;
                         do
                         {
                             Console.Clear();
