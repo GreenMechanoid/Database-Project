@@ -98,8 +98,6 @@ namespace Database_Project.Data
             {
                 entity.HasNoKey();
 
-                entity.Property(e => e.GradeID).HasColumnName("GradeID");
-
                 entity.Property(e => e.Firstname)
                     .HasMaxLength(50)
                     .IsUnicode(false);
